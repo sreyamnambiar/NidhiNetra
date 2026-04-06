@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "C:/Users/sreya/AppData/Local/Programs/Python/Python312/python.exe",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ]
+}
