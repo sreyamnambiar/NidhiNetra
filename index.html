@@ -1,13 +1,248 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>aml-dashboard</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NidhiNetra - Graph-based financial analysis system for detecting money laundering patterns through interactive spider maps and cross-case entity resolution.">
+  <title>NidhiNetra — Financial Intelligence Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🔍</text></svg>">
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Initializing NidhiNetra</div>
+  </div>
+
+  <!-- APP LAYOUT -->
+  <div class="app-layout">
+
+    <!-- ── HEADER ──────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="logo">🔍</div>
+        <div>
+          <h1>NidhiNetra</h1>
+          <div class="subtitle">Financial Intelligence</div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="case-selector">
+          <button class="case-btn active" data-case="ALL">All Cases</button>
+          <button class="case-btn" data-case="CASE-2024-001">Phantom Fund</button>
+          <button class="case-btn" data-case="CASE-2024-002">Silk Route</button>
+          <button class="case-btn" data-case="CASE-2024-003">Shadow Wire</button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="header-btn primary" id="btn-detect">
+          <span>⚡</span> Detect Patterns
+        </button>
+        <button class="header-btn" id="btn-export">
+          <span>📥</span> Export Trail
+        </button>
+      </div>
+    </header>
+
+    <!-- ── SIDEBAR (FILTERS) ───────────────────────────────── -->
+    <aside class="sidebar">
+      <!-- Stats -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Overview</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value blue" id="stat-accounts">0</div>
+            <div class="stat-label">Accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value amber" id="stat-transactions">0</div>
+            <div class="stat-label">Transactions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value red" id="stat-alerts">0</div>
+            <div class="stat-label">Alerts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value purple" id="stat-entities">0</div>
+            <div class="stat-label">Cross-Links</div>
+          </div>
+          <div class="stat-card" style="grid-column: 1/-1">
+            <div class="stat-value green" id="stat-amount">₹0</div>
+            <div class="stat-label">Total Volume</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Search & Filter</div>
+        <div class="filter-group">
+          <label class="filter-label">Account / Name</label>
+          <input class="filter-input" id="filter-search" type="text" placeholder="Search holder or ACC ID...">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">IP Address</label>
+          <input class="filter-input" id="filter-ip" type="text" placeholder="e.g. 103.45.67.89">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Phone</label>
+          <input class="filter-input" id="filter-phone" type="text" placeholder="e.g. 9876543210">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Email</label>
+          <input class="filter-input" id="filter-email" type="text" placeholder="e.g. rajesh@email.com">
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">City</label>
+          <input class="filter-input" id="filter-city" type="text" placeholder="e.g. Pune, Mumbai">
+        </div>
+      </div>
+
+      <!-- Amount Range -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Amount Range</div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <label class="filter-label">Min (₹)</label>
+            <input class="filter-input" id="filter-min-amount" type="number" placeholder="0">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Max (₹)</label>
+            <input class="filter-input" id="filter-max-amount" type="number" placeholder="∞">
+          </div>
+        </div>
+      </div>
+
+      <!-- Selectors -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Classify</div>
+        <div class="filter-group">
+          <label class="filter-label">Risk Level</label>
+          <select class="filter-select" id="filter-risk">
+            <option value="all">All Risk Levels</option>
+            <option value="critical">🔴 Critical</option>
+            <option value="high">🟠 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Account Type</label>
+          <select class="filter-select" id="filter-type">
+            <option value="all">All Types</option>
+            <option value="source">🏦 Source</option>
+            <option value="mule">💰 Mule</option>
+            <option value="destination">🎯 Destination</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="filter-actions">
+        <button class="btn-filter apply" id="btn-apply-filter">Apply Filters</button>
+        <button class="btn-filter clear" id="btn-clear-filter">Clear</button>
+      </div>
+    </aside>
+
+    <!-- ── GRAPH CANVAS ────────────────────────────────────── -->
+    <main class="graph-canvas">
+      <div id="graph-container" style="width:100%;height:100%;"></div>
+
+      <!-- Legend -->
+      <div class="graph-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="border-color:#ff6b35;background:rgba(255,107,53,0.2)"></div>
+          <span>Source</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="border-color:#ffd166;background:rgba(255,209,102,0.2)"></div>
+          <span>Mule</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="border-color:#06d6a0;background:rgba(6,214,160,0.2)"></div>
+          <span>Destination</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#a855f7;"></div>
+          <span>Cross-Case</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:#00d4ff;"></div>
+          <span>Trail</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="graph-controls">
+        <button class="graph-control-btn" id="btn-fit-view" title="Fit View">⊞</button>
+        <button class="graph-control-btn active" id="btn-toggle-particles" title="Toggle Particles">✦</button>
+      </div>
+    </main>
+
+    <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
+    <aside class="right-panel">
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-tab="details">Details</button>
+        <button class="panel-tab" data-tab="alerts">Alerts</button>
+        <button class="panel-tab" data-tab="entities">Entities</button>
+      </div>
+      <div class="panel-content">
+        <!-- Details -->
+        <div class="panel-section active" id="panel-details">
+          <div class="panel-empty">
+            <div class="icon">🔍</div>
+            <div class="text">Click any node on the<br>spider map to inspect</div>
+          </div>
+        </div>
+        <!-- Alerts -->
+        <div class="panel-section" id="panel-alerts">
+          <div class="no-data">Run pattern detection...</div>
+        </div>
+        <!-- Entities -->
+        <div class="panel-section" id="panel-entities">
+          <div class="no-data">Loading entity data...</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── BOTTOM BAR ──────────────────────────────────────── -->
+    <footer class="bottom-bar">
+      <div class="bottom-left">
+        <div class="bottom-stat">
+          <div class="bottom-dot green"></div>
+          <span id="bottom-accounts">0 Accounts</span>
+        </div>
+        <div class="bottom-stat">
+          <div class="bottom-dot amber"></div>
+          <span id="bottom-transactions">0 Transactions</span>
+        </div>
+        <div class="bottom-stat">
+          <div class="bottom-dot red"></div>
+          <span id="bottom-alerts">0 Alerts</span>
+        </div>
+      </div>
+      <div class="bottom-right">
+        <span id="bottom-case">All Cases</span>
+        <span>NidhiNetra v1.0</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- App Modules (load order matters) -->
+  <script src="js/data.js"></script>
+  <script src="js/patterns.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
 </html>
