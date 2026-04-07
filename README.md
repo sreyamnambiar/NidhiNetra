@@ -251,10 +251,10 @@ NidhiNetra/
 
 | Name | Role |
 |---|---|
-| Tamil Iniya P | Backend & Graph Database |
+| Sreya M Nambiar | Backend & Graph Database |
 | Dhanalakshmi K | Pattern Detection & Data |
-| Sreya M Nambiar | Frontend & Spider Map UI |
-| Sonali Sahu | Integration, Deployment & Pitch |
+| Sonali Sahu | Frontend & Spider Map UI |
+| Tamil Iniya P| Integration, Deployment & Pitch |
 
 ---
 
