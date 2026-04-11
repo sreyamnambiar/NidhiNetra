@@ -297,12 +297,17 @@ const SpiderMap = (() => {
     nodeGroup.append('text')
       .attr('class', 'node-label')
       .attr('text-anchor', 'middle')
-      .attr('dy', d => getNodeRadius(d) + 16)
-      .attr('font-size', '10px')
-      .attr('fill', '#c8d6e5')
+      .attr('dy', d => getNodeRadius(d) + 18)
+      .attr('font-size', '12px')
+      .attr('fill', '#ffffff')
       .attr('font-family', 'Inter, sans-serif')
-      .attr('font-weight', '500')
-      .text(d => d.holder.split(' ')[0]);
+      .attr('font-weight', '600')
+      .attr('pointer-events', 'none')
+      .text(d => {
+        const holder = d.holder || d.accountId || d.id || 'Account';
+        const name = String(holder).split ? String(holder).split(' ')[0] : String(holder);
+        return name;
+      });
 
     // Layer badge
     nodeGroup.append('text')
@@ -330,7 +335,10 @@ const SpiderMap = (() => {
           .transition().duration(200)
           .attr('r', getNodeRadius(d) + 7)
           .attr('stroke-opacity', 0.6);
-        showTooltip(event, `${d.holder}\n${d.bank} | ${d.id}\nRisk: ${d.risk.toUpperCase()}`);
+        const holder = d.holder || d.accountId || d.id || 'Account';
+        const bank = d.bank || 'Unknown Bank';
+        const risk = (d.risk || 'unknown').toUpperCase();
+        showTooltip(event, `${holder}\n${bank} | ${d.id}\nRisk: ${risk}`);
       })
       .on('mouseout', function(event, d) {
         d3.select(this).select('.node-circle')

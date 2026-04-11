@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NidhiNetra Admin Dashboard - Investigator Controls & Alerts">
+  <title>NidhiNetra Admin — Investigator Dashboard</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🔐</text></svg>">
+</head>
+<body>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading Admin Dashboard</div>
+  </div>
+
+  <!-- APP LAYOUT -->
+  <div class="app-layout">
+
+    <!-- ── HEADER ──────────────────────────────────────────── -->
+    <header class="header">
+      <div class="header-brand">
+        <div class="logo">🔐</div>
+        <div>
+          <h1>NidhiNetra Admin</h1>
+          <div class="subtitle">Investigator Control Panel</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <a href="http://localhost:3000" class="header-btn secondary">
+          <span>🔍</span> Back to Graph
+        </a>
+      </div>
+    </header>
+
+    <!-- ── SIDEBAR ───────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <nav class="nav-menu">
+        <div class="nav-section">
+          <div class="nav-title">Dashboard</div>
+          <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+            <span class="icon">📊</span> Overview
+          </a>
+          <a href="#patterns" class="nav-item" data-tab="patterns">
+            <span class="icon">🔍</span> Pattern Detection
+          </a>
+          <a href="#alerts" class="nav-item" data-tab="alerts">
+            <span class="icon">⚠️</span> Alerts & Rules
+          </a>
+          <a href="#reports" class="nav-item" data-tab="reports">
+            <span class="icon">📄</span> Reports & Export
+          </a>
+          <a href="#audit" class="nav-item" data-tab="audit">
+            <span class="icon">📋</span> Audit Log
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD TAB ──────────────────────────────────── -->
+      <section id="dashboard" class="tab-content active">
+        <div class="section-header">
+          <h2>Dashboard Overview</h2>
+          <p class="subtitle-text">Real-time financial intelligence metrics</p>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon">👥</div>
+            <div class="metric-value" id="metric-accounts">0</div>
+            <div class="metric-label">Total Accounts</div>
+            <div class="metric-change">Across 3 cases</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">💰</div>
+            <div class="metric-value" id="metric-volume">₹0</div>
+            <div class="metric-label">Transaction Volume</div>
+            <div class="metric-change" id="metric-volume-change">40 transactions</div>
+          </div>
+
+          <div class="metric-card alert">
+            <div class="metric-icon">🚨</div>
+            <div class="metric-value" id="metric-alerts">0</div>
+            <div class="metric-label">Active Alerts</div>
+            <div class="metric-change">High-risk detected</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon">🔗</div>
+            <div class="metric-value" id="metric-entities">0</div>
+            <div class="metric-label">Entity Links</div>
+            <div class="metric-change">Cross-case connections</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Cases Overview</h3>
+            </div>
+            <div class="cases-list" id="cases-list">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>High-Risk Accounts</h3>
+            </div>
+            <div class="accounts-list" id="high-risk-accounts">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PATTERN DETECTION TAB ──────────────────────────── -->
+      <section id="patterns" class="tab-content">
+        <div class="section-header">
+          <h2>Pattern Detection</h2>
+          <p class="subtitle-text">Identify suspicious financial patterns & money laundering schemes</p>
+        </div>
+
+        <div class="control-panel">
+          <div class="control-row">
+            <button class="btn btn-primary" id="btn-circular">
+              <span>🔄</span> Detect Circular Patterns
+            </button>
+            <button class="btn btn-primary" id="btn-rapid">
+              <span>⚡</span> Detect Rapid Transactions
+            </button>
+            <button class="btn btn-primary" id="btn-highvalue">
+              <span>💎</span> High-Value Networks
+            </button>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Circular Patterns</h3>
+              <div class="status-badge" id="circular-status">Idle</div>
+            </div>
+            <div class="pattern-results" id="circular-results">
+              <p class="placeholder">Click "Detect Circular Patterns" to analyze</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Rapid Transactions</h3>
+              <div class="status-badge" id="rapid-status">Idle</div>
+            </div>
+            <div class="pattern-results" id="rapid-results">
+              <p class="placeholder">Click "Detect Rapid Transactions" to analyze</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>High-Value Networks</h3>
+              <div class="status-badge" id="highvalue-status">Idle</div>
+            </div>
+            <div class="pattern-results" id="highvalue-results">
+              <p class="placeholder">Click "High-Value Networks" to analyze</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ALERTS & RULES TAB ─────────────────────────────── -->
+      <section id="alerts" class="tab-content">
+        <div class="section-header">
+          <h2>Alerts & Rules Management</h2>
+          <p class="subtitle-text">Configure detection rules and manage active alerts</p>
+        </div>
+
+        <div class="alert-controls">
+          <div class="alert-rule">
+            <h4>🚨 High-Risk Account Alert</h4>
+            <p>Triggers when account risk level is "critical"</p>
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span>Enabled</span>
+            </label>
+          </div>
+
+          <div class="alert-rule">
+            <h4>⚡ Rapid Transaction Alert</h4>
+            <p>Triggers when 3+ transactions occur within 5 minutes</p>
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span>Enabled</span>
+            </label>
+          </div>
+
+          <div class="alert-rule">
+            <h4>🔄 Circular Pattern Alert</h4>
+            <p>Triggers when circular transaction pattern detected</p>
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span>Enabled</span>
+            </label>
+          </div>
+
+          <div class="alert-rule">
+            <h4>💰 High-Value Amount Alert</h4>
+            <p>Triggers when transaction exceeds ₹1 Crore</p>
+            <label class="toggle">
+              <input type="checkbox" checked>
+              <span>Enabled</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 24px;">
+          <div class="panel-header">
+            <h3>Active Alerts</h3>
+          </div>
+          <div class="alerts-list" id="alerts-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ── REPORTS & EXPORT TAB ───────────────────────────── -->
+      <section id="reports" class="tab-content">
+        <div class="section-header">
+          <h2>Reports & Data Export</h2>
+          <p class="subtitle-text">Generate investigation reports and export findings</p>
+        </div>
+
+        <div class="export-controls">
+          <div class="export-card">
+            <div class="export-icon">📄</div>
+            <h3>Case Report</h3>
+            <p>Complete investigation summary for selected case</p>
+            <select id="case-select" class="form-input">
+              <option value="">Select Case...</option>
+              <option value="CASE-2024-001">Phantom Fund</option>
+              <option value="CASE-2024-002">Silk Route</option>
+              <option value="CASE-2024-003">Shadow Wire</option>
+            </select>
+            <button class="btn btn-success" id="btn-export-report">
+              <span>📥</span> Export as PDF
+            </button>
+          </div>
+
+          <div class="export-card">
+            <div class="export-icon">📊</div>
+            <h3>Network Graph</h3>
+            <p>Financial relationship map with all transactions</p>
+            <button class="btn btn-success" id="btn-export-graph">
+              <span>🔗</span> Export Graph (JSON)
+            </button>
+          </div>
+
+          <div class="export-card">
+            <div class="export-icon">📋</div>
+            <h3>Alert History</h3>
+            <p>All alerts and suspicious activities detected</p>
+            <button class="btn btn-success" id="btn-export-alerts">
+              <span>⚠️</span> Export Alerts (CSV)
+            </button>
+          </div>
+
+          <div class="export-card">
+            <div class="export-icon">👥</div>
+            <h3>Account Listing</h3>
+            <p>Complete account details and risk assessment</p>
+            <button class="btn btn-success" id="btn-export-accounts">
+              <span>📑</span> Export Accounts (CSV)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── AUDIT LOG TAB ──────────────────────────────────── -->
+      <section id="audit" class="tab-content">
+        <div class="section-header">
+          <h2>Audit Log</h2>
+          <p class="subtitle-text">Investigation activities and system events</p>
+        </div>
+
+        <div class="audit-controls">
+          <input type="text" id="audit-search" class="form-input" placeholder="Search audit log...">
+          <button class="btn btn-secondary" id="btn-clear-log">Clear Log</button>
+        </div>
+
+        <div class="audit-log" id="audit-log">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

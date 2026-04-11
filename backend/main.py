@@ -4,11 +4,13 @@ Exposes Neo4j graph patterns and analysis endpoints
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from neo4j import GraphDatabase
 from dotenv import load_dotenv
 import os
 from cypher_queries import CypherQueries
+from criminal_records import CRIMINAL_RECORDS
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +20,15 @@ app = FastAPI(
     title="Bank Layering Detection API",
     description="RESTful API for detecting financial transaction patterns and money laundering indicators",
     version="1.0.0"
+)
+
+# Add CORS middleware to allow frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (change to specific domains in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Global Neo4j driver
@@ -102,13 +113,64 @@ async def get_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/accounts")
-async def get_all_accounts():
-    """Get all accounts in the system"""
+@app.get("/api/accounts-with-details")
+async def get_accounts_with_details():
+    """Get all accounts with their details (names, IP, Aadhar, etc.) and risk scores"""
     try:
         with driver.session() as session:
-            result = session.run("MATCH (a:Account) RETURN a.account_id as account_id ORDER BY a.account_id")
-            accounts = [record["account_id"] for record in result]
+            result = session.run("""
+                MATCH (a:Account) 
+                RETURN 
+                    a.account_id as account_id,
+                    a.account_holder_name as name,
+                    a.ip_address as ip,
+                    a.phone_number as phone,
+                    a.aadhar_number as aadhar,
+                    a.email as email,
+                    a.location as location
+                ORDER BY a.account_id
+            """)
+            accounts = result.data()
+            
+            # Add risk scores and criminal info
+            for account in accounts:
+                risk_score = 0
+                is_criminal = account['account_id'] in CRIMINAL_RECORDS
+                
+                if is_criminal:
+                    risk_score = 100  # Critical - known criminal
+                else:
+                    # Check for suspicious patterns
+                    same_ip_result = session.run("""
+                        MATCH (a:Account {account_id: $account_id})-[:SAME_IP_ADDRESS]-(b:Account)
+                        RETURN count(b) as count
+                    """, account_id=account['account_id']).single()
+                    
+                    if same_ip_result and same_ip_result['count'] > 0:
+                        risk_score += 30  # Suspicious - same IP as other accounts
+                    
+                    # Check for circular patterns
+                    circular_result = session.run("""
+                        MATCH (a:Account {account_id: $account_id})-[:TRANSACTION]->(b:Account)-[:TRANSACTION]->(c:Account)-[:TRANSACTION]->(a)
+                        RETURN count(*) as count
+                    """, account_id=account['account_id']).single()
+                    
+                    if circular_result and circular_result['count'] > 0:
+                        risk_score += 40  # Suspicious - involved in circular patterns
+                    
+                    # Check for high-value transfers
+                    high_value_result = session.run("""
+                        MATCH (a:Account {account_id: $account_id})-[t:TRANSACTION]-(b:Account)
+                        WHERE t.amount > 30000
+                        RETURN count(t) as count
+                    """, account_id=account['account_id']).single()
+                    
+                    if high_value_result and high_value_result['count'] > 0:
+                        risk_score += 15  # Medium - high-value transfers
+                
+                # Cap risk score at 100
+                account['risk_score'] = min(risk_score, 100)
+                account['is_criminal'] = is_criminal
             
             return {
                 "count": len(accounts),
@@ -328,4 +390,42 @@ async def get_account_spider_map(account_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/criminal-record/{account_id}")
+async def get_criminal_record(account_id: str):
+    """
+    Get criminal history and past convictions for an account
+    Shows mugshot, charges, convictions, and risk level
+    """
+    try:
+        # Check if this is a known criminal account
+        if account_id in CRIMINAL_RECORDS:
+            record = CRIMINAL_RECORDS[account_id]
+            return {
+                "account_id": account_id,
+                "has_record": True,
+                "criminal_details": record
+            }
+        else:
+            # Check if it's a fraud-related account
+            with driver.session() as session:
+                result = session.run("""
+                    MATCH (a:Account {account_id: $account_id})
+                    RETURN a.account_holder_name as name
+                """, account_id=account_id).single()
+                
+                if result:
+                    return {
+                        "account_id": account_id,
+                        "has_record": False,
+                        "message": f"No criminal record found for {result['name']}"
+                    }
+                else:
+                    raise HTTPException(status_code=404, detail=f"Account {account_id} not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 

@@ -129,14 +129,25 @@ const NidhiData = (() => {
   // ── LOAD DATA FROM API ──────────────────────────────────
   async function loadFromAPI() {
     try {
-      const [casesRes, accountsRes, txnRes] = await Promise.all([
+      console.log('📡 Fetching data from Neo4j API...');
+      
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('API request timeout (5s)')), 5000)
+      );
+
+      const fetchPromise = Promise.all([
         fetch(`${API_BASE}/cases`),
-        fetch(`${API_BASE}/accounts`),
+        fetch(`${API_BASE}/accounts?source=neo4j`),
         fetch(`${API_BASE}/transactions`)
       ]);
 
+      const [casesRes, accountsRes, txnRes] = await Promise.race([
+        fetchPromise,
+        timeoutPromise
+      ]);
+
       if (!casesRes.ok || !accountsRes.ok || !txnRes.ok) {
-        throw new Error('API response not OK');
+        throw new Error(`API error`);
       }
 
       const casesData = await casesRes.json();
@@ -149,7 +160,7 @@ const NidhiData = (() => {
       _usingAPI = true;
       _isLoaded = true;
 
-      console.log('✅ Data loaded from MongoDB API');
+      console.log('✅ Data loaded from Neo4j');
       console.log(`   📊 ${_cases.length} cases, ${_accounts.length} accounts, ${_transactions.length} transactions`);
       return true;
     } catch (err) {

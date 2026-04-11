@@ -11,35 +11,64 @@ const NidhiApp = (() => {
 
   // ── INITIALIZE ────────────────────────────────────────────
   async function init() {
-    // Load data from MongoDB API (falls back to local data if unavailable)
-    await NidhiData.loadFromAPI();
+    console.log('🚀 NidhiApp initializing...');
+    
+    try {
+      // Load data from MongoDB API (falls back to local data if unavailable)
+      console.log('📡 Loading data...');
+      await NidhiData.loadFromAPI();
+      console.log('✅ Data loaded');
 
-    // Show data source indicator
-    const bottomRight = document.querySelector('.bottom-right');
-    if (bottomRight) {
-      const sourceTag = document.createElement('span');
-      sourceTag.style.cssText = NidhiData.isUsingAPI()
-        ? 'color:#06d6a0;font-weight:600;'
-        : 'color:#ffd166;font-weight:600;';
-      sourceTag.textContent = NidhiData.isUsingAPI() ? '● MongoDB Connected' : '● Local Data';
-      bottomRight.insertBefore(sourceTag, bottomRight.firstChild);
+      // Show data source indicator
+      const bottomRight = document.querySelector('.bottom-right');
+      if (bottomRight) {
+        const sourceTag = document.createElement('span');
+        sourceTag.style.cssText = NidhiData.isUsingAPI()
+          ? 'color:#06d6a0;font-weight:600;'
+          : 'color:#ffd166;font-weight:600;';
+        sourceTag.textContent = NidhiData.isUsingAPI() ? '● MongoDB Connected' : '● Local Data';
+        bottomRight.insertBefore(sourceTag, bottomRight.firstChild);
+      }
+
+      // Init graph
+      console.log('🎨 Initializing graph...');
+      SpiderMap.init('graph-container', onNodeSelected);
+      console.log('✅ Graph initialized');
+
+      // Run initial analysis
+      console.log('📊 Running analysis...');
+      runAnalysis();
+      console.log('✅ Analysis complete');
+
+      // Wire up UI events
+      console.log('🔌 Wiring events...');
+      wireEvents();
+      console.log('✅ Events wired');
+
+      // Hide loading with fallback timeout
+      setTimeout(() => {
+        console.log('✨ Hiding loader');
+        const loader = document.getElementById('loading-overlay');
+        if (loader) {
+          loader.classList.add('hidden');
+          setTimeout(() => {
+            if (loader.parentNode) loader.remove();
+          }, 500);
+        }
+      }, 500);
+    } catch (err) {
+      console.error('❌ Init error:', err);
+      // Force loading screen to disappear after 3 seconds even if error
+      setTimeout(() => {
+        const loader = document.getElementById('loading-overlay');
+        if (loader) {
+          loader.classList.add('hidden');
+          setTimeout(() => {
+            if (loader.parentNode) loader.remove();
+          }, 500);
+        }
+      }, 3000);
     }
-
-    // Init graph
-    SpiderMap.init('graph-container', onNodeSelected);
-
-    // Run initial analysis
-    runAnalysis();
-
-    // Wire up UI events
-    wireEvents();
-
-    // Hide loading
-    setTimeout(() => {
-      const loader = document.getElementById('loading-overlay');
-      if (loader) loader.classList.add('hidden');
-      setTimeout(() => loader.remove(), 500);
-    }, 1200);
   }
 
   // ── RUN ANALYSIS ──────────────────────────────────────────
